@@ -15,6 +15,7 @@
 from util import manhattanDistance
 from game import Directions
 import random, util
+import math
 
 from game import Agent
 
@@ -74,8 +75,52 @@ class ReflexAgent(Agent):
         newScaredTimes = [ghostState.scaredTimer for ghostState in newGhostStates]
 
         "[Project 3] YOUR CODE HERE"
+
+        if successorGameState.isWin():
+            return float("inf")
+        elif successorGameState.isLose():
+            return -float("inf")
+
+        numOfCapsules = len(successorGameState.getCapsules())
+        disToClosestCap = 0
+        if numOfCapsules > 0:
+            disToClosestCap = min(map(lambda x:manhattanDistance(newPos, x), successorGameState.getCapsules()))
+        numOfFood = newFood.count(True)
+
+        foodList = newFood.asList()
+        ToClosestFood = min(map(lambda x:manhattanDistance(newPos, x), foodList))
+
+        disToActiveGhosts = 0
+        disToScaredGhosts = 0
+        for ghost in newGhostStates:
+            if not ghost.scaredTimer:
+                tmp = manhattanDistance(newPos, ghost.getPosition())
+                disToActiveGhosts += tmp
+            else:
+                tmp = manhattanDistance(newPos, ghost.getPosition())
+                disToScaredGhosts += tmp
+        if disToActiveGhosts == 0:
+            disToActiveGhosts = float("inf")
+
+        TotalScaredTime = sum(newScaredTimes)
+        """
+        print ("number of Cap ", numOfCapsules)
+        print ("number of food", numOfFood)
+        print("Closest food dis ", ToClosestFood)
+        print("Closest cap dis", disToClosestCap)
+        print("Closest dis to the ghosts ", disToClosestActiveGhost," and scared ", disToClosestScaredGhost)
+        print("Scared time ", TotalScaredTime)
         
-        return successorGameState.getScore()
+        """
+        Score = -0.8*ToClosestFood \
+                -2.0/disToActiveGhosts \
+                -8*disToScaredGhosts \
+                -20*numOfCapsules \
+                -disToClosestCap\
+                -12*numOfFood\
+                +TotalScaredTime
+
+        return Score
 
 def scoreEvaluationFunction(currentGameState):
     """
@@ -144,7 +189,8 @@ class AlphaBetaAgent(MultiAgentSearchAgent):
           Returns the minimax action using self.depth and self.evaluationFunction
         """
         
-        "[Project 3] YOUR CODE HERE"        
+        "[Project 3] YOUR CODE HERE"
+
         
         util.raiseNotDefined()
 
